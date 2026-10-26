@@ -1,0 +1,127 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Nook</title>
+<meta name="theme-color" content="#0B0D10">
+<meta name="description" content="Личная лента для файлов, фото и заметок на всех твоих устройствах">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" sizes="32x32" href="icons/favicon-32.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Nook">
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+<!-- Первичная настройка (если ключи не прописаны в config.js) -->
+<section id="setup" class="center hidden">
+  <div class="panel narrow">
+    <div class="logo">N</div>
+    <h1>Подключи Supabase</h1>
+    <p class="muted">Вставь адрес проекта и публичный (anon / publishable) ключ из Supabase → Project Settings → API. Они сохранятся только в этом браузере.</p>
+    <input id="setup-url" placeholder="https://xxxx.supabase.co" autocomplete="off" spellcheck="false">
+    <input id="setup-key" placeholder="публичный ключ (anon / publishable)" autocomplete="off" spellcheck="false">
+    <button class="btn primary" id="setup-save">Сохранить</button>
+    <p class="err" id="setup-err"></p>
+  </div>
+</section>
+
+<!-- Вход -->
+<section id="auth" class="center hidden">
+  <div class="brand"><div class="logo">N</div><h1>Войти в Nook</h1><p class="muted">Твоя личная лента на всех устройствах</p></div>
+  <div class="panel narrow">
+    <input id="auth-email" type="email" placeholder="you@example.com" autocomplete="email" inputmode="email">
+    <input id="auth-pass" type="password" placeholder="Пароль (от 6 символов)" autocomplete="current-password">
+    <button class="btn primary" id="auth-login">Войти</button>
+    <button class="btn" id="auth-signup">Создать аккаунт</button>
+    <p class="err" id="auth-msg"></p>
+  </div>
+</section>
+
+<!-- Приложение -->
+<div id="app" class="hidden">
+  <aside id="sidebar">
+    <div class="side-brand"><div class="logo sm">N</div><span>Nook</span></div>
+    <div class="search side-search"><svg viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5"/></svg><input id="search-d" placeholder="Поиск" autocomplete="off"></div>
+    <div class="side-label">КОМНАТЫ</div>
+    <nav id="rooms-side"></nav>
+    <div class="side-label">МОИ УСТРОЙСТВА</div>
+    <div id="devices"></div>
+    <div class="grow"></div>
+    <div class="side-foot">
+      <div class="muted small" id="user-email"></div>
+      <button class="btn small-btn" id="install-btn" hidden>Установить приложение</button>
+      <button class="btn small-btn" id="logout">Выйти</button>
+    </div>
+  </aside>
+
+  <main id="main">
+    <header id="top">
+      <div class="top-l"><div class="logo sm mob-only">N</div><div><div class="title" id="room-title">Все</div><div class="muted small" id="status">подключаемся…</div></div></div>
+      <div class="top-r">
+        <button class="ibtn" id="search-toggle" title="Поиск"><svg viewBox="0 0 24 24"><path d="M11 4a7 7 0 1 0 0 14 7 7 0 0 0 0-14zM21 21l-5-5"/></svg></button>
+        <button class="ibtn pdf-btn" id="pdf-open" title="PDF-инструменты"><svg viewBox="0 0 24 24"><path d="M14 3H7a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V8zM14 3v5h5"/></svg><span>PDF</span></button>
+        <button class="ibtn mob-only" id="menu-btn" title="Меню"><svg viewBox="0 0 24 24"><path d="M5 12h.01M12 12h.01M19 12h.01" stroke-width="3"/></svg></button>
+      </div>
+    </header>
+    <div id="search-bar" class="hidden"><input id="search-m" placeholder="Поиск по ленте" autocomplete="off"></div>
+    <div id="chips" class="chips"></div>
+    <div id="feed"></div>
+    <div id="dropzone" class="hidden">Отпусти файлы, чтобы отправить в Nook</div>
+    <footer id="composer">
+      <input type="file" id="file-in" multiple hidden>
+      <button class="ibtn" id="attach" title="Прикрепить файл"><svg viewBox="0 0 24 24"><path d="M12 5v14M5 12h14"/></svg></button>
+      <textarea id="msg" rows="1" placeholder="Напиши, вставь (Ctrl+V) или перетащи файл…"></textarea>
+      <button class="ibtn accent" id="send" title="Отправить"><svg viewBox="0 0 24 24" style="stroke-width:2.4"><path d="M12 19V5M5 12l7-7 7 7"/></svg></button>
+    </footer>
+  </main>
+</div>
+
+<!-- Меню на телефоне -->
+<div id="sheet" class="hidden">
+  <div class="sheet-card">
+    <div class="side-label">КОМНАТЫ</div><div id="rooms-sheet"></div>
+    <div class="side-label">МОИ УСТРОЙСТВА</div><div id="devices-sheet"></div>
+    <div class="muted small" id="user-email-m" style="margin:12px 0 4px"></div>
+    <button class="btn" id="install-btn-m" hidden>Установить приложение</button>
+    <button class="btn" id="logout-m">Выйти</button>
+    <button class="btn" id="sheet-close">Закрыть</button>
+  </div>
+</div>
+
+<!-- PDF-инструменты -->
+<div id="pdf-modal" class="hidden">
+  <div class="modal-card">
+    <div class="modal-head"><span class="title">PDF-инструменты</span><button class="ibtn" id="pdf-close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div>
+    <div class="privacy"><svg viewBox="0 0 24 24"><path d="M6 11h12v9H6zM8 11V8a4 4 0 0 1 8 0v3"/></svg>Обработка на устройстве — файлы не уходят на сторонние серверы</div>
+    <div class="muted small" style="margin:12px 0 6px">Отметь файлы по порядку — из ленты или с устройства</div>
+    <div id="pdf-list"></div>
+    <label class="add-local"><input type="file" id="pdf-local" multiple accept="application/pdf,image/*" hidden>+ Добавить с устройства</label>
+    <div class="tools">
+      <button class="tool" data-tool="merge"><svg viewBox="0 0 24 24"><path d="M6 4v6a6 6 0 0 0 6 6M18 4v6a6 6 0 0 1-6 6M12 16v5"/></svg>Объединить</button>
+      <button class="tool" data-tool="images"><svg viewBox="0 0 24 24"><path d="M4 8h4l2-3h4l2 3h4v11H4zM12 17a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7z"/></svg>Из фото</button>
+      <button class="tool" data-tool="rotate"><svg viewBox="0 0 24 24"><path d="M20 11a8 8 0 1 0-2.3 5.7M20 4v7h-7"/></svg>Повернуть</button>
+      <button class="tool" data-tool="pages"><svg viewBox="0 0 24 24"><path d="M12 3v18M5 8l-2 4 2 4M19 8l2 4-2 4"/></svg>Страницы</button>
+    </div>
+    <input id="pdf-range" placeholder="Страницы для «Страницы», например 1-3,5" autocomplete="off">
+    <p class="muted small" id="pdf-hint">Объединить — выбери 2+ PDF. Из фото — выбери картинки. Повернуть — по 90° по часовой. Страницы — один PDF и диапазон.</p>
+    <p class="status" id="pdf-status"></p>
+  </div>
+</div>
+
+<!-- Просмотр -->
+<div id="viewer" class="hidden">
+  <div class="viewer-bar"><span id="viewer-name"></span><div><a class="btn small-btn" id="viewer-dl" download>Скачать</a><button class="ibtn" id="viewer-close"><svg viewBox="0 0 24 24"><path d="M6 6l12 12M18 6L6 18"/></svg></button></div></div>
+  <div id="viewer-body"></div>
+</div>
+
+<div id="toast" class="hidden"></div>
+
+<script src="config.js"></script>
+<script type="module" src="app.js"></script>
+</body>
+</html>
